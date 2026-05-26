@@ -10,7 +10,8 @@ from app.utils.dependencies import get_current_user
 
 router = APIRouter(
     prefix="/posts",
-    tags=["Posts"]
+    tags=["Posts"],
+    dependencies=[Depends(get_current_user)]
 )
 
 
@@ -55,8 +56,13 @@ def create_post(body: PostCreate, db: Session = Depends(get_db), current_user: U
 # setattr(post, key, value) dynamically sets attributes on the model object — Python's equivalent of Object.assign().
 
 @router.put("/{id}", response_model=PostResponse)
-def update_post(id: int, body: PostUpdate, db: Session = Depends(get_db)):
-    post = db.query(Post).filter(Post.id == id).first()
+def update_post(id: int, body: PostUpdate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    post = db.query(Post).filter(
+        Post.id == id,
+        Post.user_id == current_user.id
+    ).first()
+    # if post.user_id != current_user.id:
+    # raise HTTPException(status_code=403)
     if not post:
       raise HTTPException(status_code=404, detail="Post not found")
     for key, value in body.model_dump(exclude_unset=True).items():
@@ -68,8 +74,11 @@ def update_post(id: int, body: PostUpdate, db: Session = Depends(get_db)):
     return post
 
 @router.patch("/{id}/published", response_model=PostResponse)
-def patch_published(id: int, body: PostPatchPublished, db: Session = Depends(get_db)):
-    post = db.query(Post).filter(Post.id == id).first()
+def patch_published(id: int, body: PostPatchPublished, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    post = db.query(Post).filter(
+        Post.id == id,
+        Post.user_id == current_user.id
+    ).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
     setattr(post, "published", body.published)
@@ -78,9 +87,11 @@ def patch_published(id: int, body: PostPatchPublished, db: Session = Depends(get
     return post
 
 @router.delete("/{id}", status_code=204)
-def delete_post(id: int, db: Session = Depends(get_db)):
-    post = db.query(Post).filter(Post.id == id).first()
-
+def delete_post(id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    post = db.query(Post).filter(
+        Post.id == id,
+        Post.user_id == current_user.id
+    ).first()
     if not post:
         raise HTTPException(status_code=404, detail="Post not found")
 

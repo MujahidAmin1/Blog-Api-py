@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse, LoginDto
+from app.utils.dependencies import get_current_user
 from app.utils.hashing import hash_password, verify_password
 from app.utils.jwt import create_access_token
 
@@ -33,6 +34,12 @@ def login(body: LoginDto, db: Session = Depends(get_db)):
     token = create_access_token({"user_id": user.id})
     return {"access_token": token, "token_type": "bearer", "user": (user.email, user.password)}
 
+@router.get("/me")
+def me(user: User = Depends(get_current_user)):
+    return {
+    "user": {"id": user.id, "username": user.username, "email": user.email}}
+    
+    
 @router.get("/get_user_by_id/{id}", response_model=UserResponse)
 def get_user_by_id(id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == id).first()

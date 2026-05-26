@@ -15,6 +15,5 @@ class UserResponse(BaseModel):
     model_config = {"from_attributes": True}
 
 class LoginDto(BaseModel):
-    username: str
     email: EmailStr
     password: str

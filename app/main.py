@@ -6,7 +6,6 @@ from app.routers import posts
 
 Base.metadata.create_all(bind=engine)  # creates tables if they don't exist
 
-
 app = FastAPI()
 
 app.include_router(auth.router)
