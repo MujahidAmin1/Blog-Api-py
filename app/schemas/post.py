@@ -26,7 +26,7 @@ class PostResponse(BaseModel):
     content: str
     published: bool
     user_id: int
-    img_url: str
+    img_url: str | None
     created_at: datetime
 
     model_config = {"from_attributes": True}

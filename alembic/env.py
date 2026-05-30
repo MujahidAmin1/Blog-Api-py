@@ -6,6 +6,8 @@ from sqlalchemy import pool
 from alembic import context
 
 from app.database import Base
+import app.models.post  # noqa: F401 — registers Post with Base.metadata
+import app.models.user  # noqa: F401 — registers User with Base.metadata
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
