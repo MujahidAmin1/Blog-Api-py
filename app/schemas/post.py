@@ -12,8 +12,6 @@ class PostCreate(BaseModel):
 class PostUpdate(BaseModel):
     title: str | None = None
     content: str | None = None
-    img_url: str | None = None
-    published: bool | None = None
 
 # what the client sends to PATCH published status
 class PostPatchPublished(BaseModel):
