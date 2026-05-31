@@ -14,7 +14,7 @@ class RefreshRequest(BaseModel):
     refresh_token: str
 
 
-@router.post("/register", status_code=201, response_model=UserResponse)
+@router.post("/register", status_code=201)
 def register(body: UserCreate, db: Session = Depends(get_db)):
     existing = db.query(User).filter(User.email == body.email).first()
 
@@ -26,7 +26,19 @@ def register(body: UserCreate, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
-    return user
+    
+    access_token = create_access_token({"user_id": user.id})
+    refresh_token = create_refresh_token({"user_id": user.id})
+
+    user.refresh_token = refresh_token
+    db.commit()
+
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+        "user": {"id": user.id, "username": user.username, "email": str(user.email)}
+    }
 # ccc
 @router.post("/login")
 def login(body: LoginDto, db: Session = Depends(get_db)):
