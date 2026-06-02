@@ -52,20 +52,20 @@ def create_post(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    image_url = None
+    img_url = None
     image_public_id = None
 
     if image:
         contents = image.file.read()
         result = upload_image(contents)
-        image_url = result["url"]
+        img_url = result["url"]
         image_public_id = result["public_id"]
 
     post = Post(
         title=title,
         content=content,
         published=published,
-        image_url=image_url,
+        img_url=img_url,
         image_public_id=image_public_id,
         user_id=current_user.id
     )
