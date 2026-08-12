@@ -7,6 +7,7 @@ from app.schemas.post import PostCreate, PostUpdate, PostPatchPublished, PostRes
 from typing import Annotated, List
 from app.utils.cloudinary import upload_image, delete_image
 from app.utils.dependencies import get_current_user
+from app.utils.limiter import limiter
 
 router = APIRouter(
     prefix="/posts",
@@ -44,6 +45,7 @@ def get_post(id: int, db: Session = Depends(get_db)):
 # db.refresh(post) re-fetches the row so you get the DB-generated fields like id and created_at
 
 @router.post("/", status_code=201, response_model=PostResponse)
+@limiter.limit("10/hour")
 def create_post(
     title: Annotated[str, Form()],
     content: Annotated[str, Form()],

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -7,7 +7,7 @@ from app.schemas.user import UserCreate, UserResponse, LoginDto
 from app.utils.dependencies import get_current_user
 from app.utils.hashing import hash_password, verify_password
 from app.utils.jwt import create_access_token, create_refresh_token, verify_refresh_token
-
+from app.utils.limiter import limiter
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 class RefreshRequest(BaseModel):
@@ -15,7 +15,8 @@ class RefreshRequest(BaseModel):
 
 
 @router.post("/register", status_code=201)
-def register(body: UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def register(request: Request, body: UserCreate, db: Session = Depends(get_db)):
     existing = db.query(User).filter(User.email == body.email).first()
 
     if existing:
@@ -40,8 +41,10 @@ def register(body: UserCreate, db: Session = Depends(get_db)):
         "user": {"id": user.id, "username": user.username, "email": str(user.email)}
     }
 # ccc
+
 @router.post("/login")
-def login(body: LoginDto, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def login(request: Request, body: LoginDto, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == body.email).first()
 
     if not user or not verify_password(body.password, str(user.password)):
